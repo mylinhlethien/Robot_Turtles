@@ -1,10 +1,11 @@
+package model;
 
 public class Card {
 	public static void playCard() {
 		
 	}
 	
-	public static String getName() {
+	public String getName() {
 		return "String";
 	}
 }

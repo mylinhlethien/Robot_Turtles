@@ -1,10 +1,11 @@
+package view;
 import java.awt.*;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-public class Board extends JFrame {
+public class displayBoard extends JFrame {
 	JLayeredPane layeredPane;
 	JPanel Board;
 	static int[][] Cell = new int[8][8];
@@ -68,7 +69,7 @@ public class Board extends JFrame {
 	
 	
 	//constructeur
-	public Board() {
+	public displayBoard() {
 		
 	Dimension boardSize = new Dimension(600, 600);
  

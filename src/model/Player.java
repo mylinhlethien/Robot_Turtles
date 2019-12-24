@@ -1,8 +1,10 @@
+package model;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Player {
+public class Player implements Move {
 	public static Scanner scanner = new Scanner(System.in);
 	
 	String color;

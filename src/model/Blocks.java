@@ -1,6 +1,7 @@
+package model;
 
 public class Blocks {
-	public static boolean isDestructable() {
+	public boolean isDestructable() {
 		return true;
 	}
 	
