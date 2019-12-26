@@ -1,7 +1,7 @@
 package model;
 
 public class LaserCard {
-	public String name;
+	public String name = "laserCard";
 	
 	public String getName() {
 		return name;

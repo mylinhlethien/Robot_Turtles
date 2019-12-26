@@ -1,7 +1,7 @@
 package model;
 
 public class YellowCard {
-public String name;
+public String name = "yellowCard";
 	
 	public String getName() {
 		return name;

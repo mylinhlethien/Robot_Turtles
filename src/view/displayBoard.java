@@ -125,15 +125,12 @@ public class displayBoard extends JFrame {
 
 	
 	public static void main(String[] args) {
-		/*JFrame frame = new Board();
+		JFrame frame = new displayBoard();
 		frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE );
 		frame.pack();
 		frame.setResizable(true);
 		frame.setLocationRelativeTo( null );
-		frame.setVisible(true);*/
-		emptyBoard();
-		setWall();
-		afficherPlateauConsole();
+		frame.setVisible(true);
 		
 	}
 	
