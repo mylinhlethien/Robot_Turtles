@@ -124,14 +124,14 @@ class Tuile extends JButton implements MouseListener {
 				//grille du jeu, celle du haut
 				if( tuile.Emplacement == PANEL_JEU && event == MouseEvent.BUTTON1  &&  tuile.CodeCarte.startsWith("T")) {
 					//carte tortue
-					//if( tuile.Partie.GetNbJoueur() >1) {
+					if( tuile.Partie.GetNbJoueur() >1) {
 						//affecter un bug
 						msg +="bug affecté";
 						retOk=Partie.AffecterUnBug(tuile.CodeCarte);
 						if (!retOk) msg = "Pas de bug disponible!";
 						tuile.Frame.AfficherGrilleHaut(1,null);
 						tuile.Frame.AfficherGrillesBas();
-					//}
+					}
 				}
 				if( tuile.Emplacement == PANEL_JEU &&  tuile.CodeCarte =="") {
 					if(event == MouseEvent.BUTTON1 &&  tuile.CodeCarte =="") {
@@ -209,11 +209,11 @@ class Tuile extends JButton implements MouseListener {
 			//grille du haut
 			if( tuile.Emplacement == PANEL_JEU &&  tuile.CodeCarte.startsWith("T")) {
 				//carte tortue
-				//if( tuile.Partie.GetNbJoueur() >1) {
+				if( tuile.Partie.GetNbJoueur() >1) {
 					String orient=tuile.Partie.GetOrientTortue();
 					msg += ", orient:"+orient;
 					msg += ", clic  pour affecter un bug";
-				//}
+				}
 			}
 			if( tuile.Emplacement == PANEL_JEU &&  tuile.CodeCarte =="") {
 					//case vide
