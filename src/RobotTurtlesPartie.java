@@ -9,15 +9,17 @@ class Joueur {
 	private String Nom;
 	private String Tortue;
 	private int LigneTortue, ColonneTortue;
-	private int LigneInitialeTortue, ColonneInitialeTortue;
+	public int LigneInitialeTortue, ColonneInitialeTortue;
 	private int  OrientationTortue; // BAS = 2; GAUCHE = 1; DROITE = 3;	HAUT = 0;
+	private int ActionDuTour; //0: rien , 1:ComplÃ©ter , 2:exÃ©cuter, 3:construire un mur, 4:tirer une carte
+	public int NbCarteTiree, NbCarteDefaussee;
 	//liste des cartes
 	private ArrayList<String> PaquetCartes = new ArrayList<String>();//paquet de carte
 	private ArrayList<String> MainDuJoueur = new ArrayList<String>();//la main du joueur
 	private ArrayList<String> Programme = new ArrayList<String>(); //le programme
 	private ArrayList<String> Defenses = new ArrayList<String>();//la liste des cartes de defense
-	private ArrayList<String> Joyaux = new ArrayList<String>();// les joyaux gagnés par l'utilisateur
-	//presentation des carte dans des grilles à  2 dimensions
+	private ArrayList<String> Joyaux = new ArrayList<String>();// les joyaux gagnÃ©s par l'utilisateur
+	//presentation des carte dans des grilles Ã   2 dimensions
 	private String[][] GrilleCartes;//gere les position des cartes dans le pave du bas
 	private String[][] GrilleJoyaux;//gere les position des cartes dans le pave du bas
 	private String[][] GrilleMain;//gere les position des cartes dans le pave du bas
@@ -25,9 +27,13 @@ class Joueur {
 	private String[][] GrilleProgramme;//gere les position des cartes dans le pave du bas
 	private int NbCarteMurPierre;
 	private int NbCarteMurGlace;
-	private int ModeDeJeux;//DeBase=1, Avancé=2 (avec carte bug et 3 manches)
-	public int NbTour;//tour de jeu réalisés par l'utilisateur 
-	public int NbCarteJouees; // nb de carte jouées, ser pour melanger la defausse
+	private int ModeDeJeux;//DeBase=1, AvancÃ©=2 (avec carte bug et 3 manches)
+	public int NbCarteJouees; // nb de carte jouÃ©es, sert pour mÃ©langer la defausse
+	public boolean EnJeu;
+	private static final int BAS = 2;
+	private static final int GAUCHE = 1;
+	private static final int DROITE = 3;
+	private static final int HAUT = 0;
 	//constructeur
 	public Joueur(String nom,  int key, int modeDeJeux, int nbCarteMurPierre,  int nbCarteMurGlace){
 		Nom=nom; Tortue="T"+key; 
@@ -35,7 +41,11 @@ class Joueur {
 		NbCarteMurPierre=nbCarteMurPierre;
 		NbCarteMurGlace=nbCarteMurGlace;
 		ModeDeJeux=modeDeJeux;
-		OrientationTortue=2;// vers le bas au démarrage 
+		OrientationTortue=BAS;// vers le bas au dÃ©marrage 
+		ActionDuTour=0;
+		NbCarteTiree=0;
+		NbCarteDefaussee=0;
+		EnJeu=true;
 		
 		InitialiserJoueur();
 		 Joyaux.clear();//en debut de partie
@@ -55,11 +65,11 @@ class Joueur {
 		{"E", "./images/bug.png"}, // carte bug / erreur
 		
 		{"B", "./images/cards/bleueCard.png"}, // avancer
-		{"P", "./images/cards/purpleCard.png"}, // tourner à droide
-		{"Y", "./images/cards/yellowCard.png"}, // tourner à gauche
+		{"P", "./images/cards/purpleCard.png"}, // tourner Ã  droide
+		{"Y", "./images/cards/yellowCard.png"}, // tourner Ã  gauche
 		{"L", "./images/cards/LaserCard.png"}, // laser
 		{"U", "./images/cards/UnknownCard.png"}, // carte a l'envers
-		{"C", "./images/cards/TropheCard.png"}, // carte coupe / point gagné
+		{"C", "./images/cards/TropheCard.png"}, // carte coupe / point gagnÃ©
 		
 		{"Paquet", "./images/cards/paquet.png"}, // paquet de carte
 		{"Defense", "./images/cards/bouclier.png"}, // liste des murs + carte bug
@@ -110,16 +120,16 @@ class Joueur {
 		//GrilleProgramme[0][0] = "Programme";
 		GrilleProgramme[0][0] = Tortue;
 		
-		// ligne des cartes
+		// ligne des cartes pioche
 		for (int i = 0; i < PaquetCartes.size(); i++) {
 			GrilleCartes[0][i] = PaquetCartes.get(i);
 		}
 		
-		// ligne joyaux gagnés
+		// ligne joyaux gagnÃ©s
 		for (int i = 0; i < Joyaux.size(); i++) {
 			GrilleJoyaux[0][i+1] = Joyaux.get(i);
 		}
-		// ligne defence
+		// ligne defense
 		for (int i = 0; i < Defenses.size(); i++) {
 			GrilleDefense[0][i+1] = Defenses.get(i);
 		}
@@ -135,7 +145,7 @@ class Joueur {
 		}
 		
 	}
-	//les accesseurs get et set
+	//les accesseurs get et les mutateurs set
 	public String GetNomJoueur()
 	{
 		return Nom;
@@ -160,10 +170,10 @@ class Joueur {
 	{
 		String orient="";
 		switch (OrientationTortue) {
-			case 0:orient="Haut"; break;
-			case 1:orient="Gauche"; break;
-			case 2:orient="Bas"; break;
-			case 3:orient="Droite"; break;
+			case HAUT:orient="Haut"; break;
+			case GAUCHE:orient="Gauche"; break;
+			case BAS:orient="Bas"; break;
+			case DROITE:orient="Droite"; break;
 			default: break;
 		}
 		return orient;
@@ -202,7 +212,7 @@ class Joueur {
 	}
 	public String[][] GetGrilleProgramme(int mode){
 		String[][] grille;
-		if(mode == 1) grille= GrilleProgramme;
+		if(mode == 1) grille= GrilleProgramme; //  mode=1 afficher les cartes en mode clair et mode = 2 afficher les cartes face cachï¿½e
 		else {
 			grille=new String[1][37];
 			//copie de la grille
@@ -216,10 +226,23 @@ class Joueur {
 		}
 		return grille;
 	}
+	public int GetActionDuTour()
+	{
+		return ActionDuTour;
+	}
+	public void SetActionDuTour(int action)
+	{
+		ActionDuTour=action;
+		if (action == 0) {
+			NbCarteTiree = 0;
+			NbCarteDefaussee = 0;
+		}
+	}
 	public void SetPositionTortue(int lig, int col, int mode) {
 		LigneTortue=lig; ColonneTortue=col;
 		if(mode == 1) {// mode initialisation
 			LigneInitialeTortue=lig; ColonneInitialeTortue=col;
+			EnJeu=true;
 		}
 	}
 	public void SetOrientationTortue(int orientation)
@@ -248,36 +271,41 @@ class Joueur {
 		CreerGrilles();
 		return true;
 	}
-	public void NouveauJoyau(String codeCarte,int nbJoueur, int nbGagneur) {
+	public void NouveauJoyau(String codeCarte,int nbJoueur, int nbGagnant) {
 		
-		//nb de joyaux =nb points gagnées
-		for(int i=0;i<nbJoueur-nbGagneur; i++) {
+		//nb de joyaux =nb points gagnï¿½es
+		for(int i=0;i<nbJoueur-nbGagnant; i++) {
 			Joyaux.add("C"+i);
 		}
 		CreerGrilles();
 	}
-	public boolean AffecterUnBug() {
+	public boolean AffecterUnBug () {
+		
+		Programme.add(0,"E");
+		CreerGrilles();
+	
+		return true;
+	}
+	public boolean SupprimerCarteBug() {
 		//recherche de carte bug
 		for(int i=0; i < Defenses.size(); i++) {
 			if(Defenses.get(i).startsWith("E")) {
 				Defenses.remove(i);
-				Programme.add(0,"E");
 				CreerGrilles();
 				return true;
 			}
 		}
 		return false;
 	}
-	public void MelangerInstructions()
-	{
-		// nombre aléatoire entre 2 et 37
+	public void MelangerInstructions(){
+		// nombre alï¿½atoire entre 2 et 37
 		Random random = new Random();
 		for( int n = 0; n < 50; n++ )
 		{
 			int indiceMelange = random.nextInt(20) +1;
 			for( int i=indiceMelange; i< PaquetCartes.size(); i++)
 			{
-				int newIndice = random.nextInt(37);//0 - 43
+				int newIndice = random.nextInt(37);
 				newIndice= newIndice % PaquetCartes.size();
 				String val=PaquetCartes.get(i);
 				PaquetCartes.remove(i);
@@ -306,25 +334,31 @@ class Joueur {
 	}
 	public boolean TirerUneCarte()
 	{
+		if (NbCarteTiree >=5) {
+			return false;
+		}
 		int lg=MainDuJoueur.size();
 		if(lg < 5) 
 		{
 			MainDuJoueur.add(PaquetCartes.get(0)); //ajout en fin de liste
 			PaquetCartes.remove(0);
+			NbCarteTiree++;
 		}
 		else {
 			return false;
 		}
-		this.CreerGrilles();
+		CreerGrilles();
 		return true;
 	}
 	public boolean DefausserUneCarte(String codeCarte)
 	{
+		if (NbCarteDefaussee >=5) return false;
 		//deplacer de main vers cartes
 		for(int i=0; i < MainDuJoueur.size();i++) {
 			if(MainDuJoueur.get(i).equals(codeCarte)) {
 				PaquetCartes.add(MainDuJoueur.get(i)); //ajout en fin de liste
 				MainDuJoueur.remove(i);
+				NbCarteDefaussee++;
 			}
 		}
 		
@@ -334,15 +368,21 @@ class Joueur {
 	public boolean DefausserLaMain()
 	{
 		//deplacer tout de main vers cartes
-		for(int i=0; i < MainDuJoueur.size();i++) {
+		int j=0;
+		for(int i=0; i < MainDuJoueur.size() && NbCarteDefaussee <5 ;i++) {
 			PaquetCartes.add(MainDuJoueur.get(i)); //ajout en fin de liste
+			NbCarteDefaussee ++;
+			//MainDuJoueur.remove(i);
+			j++;
 		}
-		MainDuJoueur.clear();
+		for(int i=0; i<j;i++) MainDuJoueur.remove(0);
 		
-		this.CreerGrilles();
+		CreerGrilles();
+		
+		if (MainDuJoueur.size()>0) return false;
 		return true;
 	}
-	public boolean InserrerCarteAuProgramme(String codeCarte)
+	public boolean InsererCarteAuProgramme(String codeCarte)
 	{
 		//deplacer  de main vers programme
 		for(int i=0; i < MainDuJoueur.size();i++) {
@@ -351,38 +391,13 @@ class Joueur {
 				MainDuJoueur.remove(i);
 			}
 		}
-		
+		SetActionDuTour(1); //complï¿½ter programme
 		this.CreerGrilles();
 		return true;
 	}
-	public boolean AnnulerCarteDuProgramme(String codeCarte)
-	{
-		//carte bug
-		if(codeCarte.startsWith("E")) return false;
-		
-		//carte brouillée
-		if(codeCarte.startsWith("U")) codeCarte=codeCarte.substring(1);
-		//deplacer  de programme vers main  
-		for(int i=0; i < Programme.size();i++) {
-			if(Programme.get(i).equals(codeCarte)) {
-				MainDuJoueur.add(Programme.get(i)); //ajout en fin de liste
-				Programme.remove(i);
-			}
-		}
-		this.CreerGrilles();
-		return true;
-	}
-	public boolean AnnulerLeProgramme(int mode)
-	{
-		//voir si bug
-		for(int i= Programme.size()-1; i >=0; i--) {
-			if(Programme.get(i).startsWith("E") && mode == 0) {
-				//annualation du programme de la part du joueur
-				return false;
-			}
-		}
-		
-		//annulation après exécution
+	public boolean AnnulerLeProgramme()
+	{		
+		//annulation aprï¿½s exï¿½cution
 		//deplacer tout le programme vers main ou paquet
 		for(int i= Programme.size()-1; i >=0; i--) {
 				PaquetCartes.add(Programme.get(i)); //ajout en fin de liste si carte != bug
@@ -395,28 +410,18 @@ class Joueur {
 	}
 	public String GetMur(int type)
 	{
-		//if(type == 1)
 		for(int i=0; i < Defenses.size();i++) {
 			String codeCarte= Defenses.get(i);
+			//if(type == 1)
 			if( type == 1 && codeCarte.startsWith("W")) {
 				//mur de pierre
 				Defenses.remove(i);
-				for(int j=0; j < Defenses.size();j++) {
-					if(Defenses.get(j).equals(codeCarte)) {
-						Defenses.remove(j);
-					}
-				}
 				this.CreerGrilles();
 				return codeCarte;
 			}
 			if( type == 2 && codeCarte.startsWith("I")) {
 				//mur de glace
 				Defenses.remove(i);
-				for(int j=0; j < Defenses.size();j++) {
-					if(Defenses.get(j).equals(codeCarte)) {
-						Defenses.remove(j);
-					}
-				}
 				CreerGrilles();
 				return codeCarte;
 			}
@@ -428,9 +433,10 @@ class Joueur {
 //classe partie/maitre du jeu
 public class RobotTurtlesPartie {
 	private int NbManche,  NbJoueur;
+	public int NbJoueurEnJeu;
 	private int ModeDeJeux;
 	private int MancheCourante, JoueurCourant;
-	private int NbRubyEnJeux,NbGagneur;
+	private int NbRubyEnJeux,NbGagnant;
 	private String[][] GrilleDeJeu;//gere le jeu : tortues, murs, joyaux
 	private ArrayList<Joueur>ListJoueurs;
 	//constantes pour orientation des tortues
@@ -449,7 +455,8 @@ public class RobotTurtlesPartie {
 	//methodes
 	public void Initialiser(int nbManche, int nbJoueur, int modeDeJeux)
 	{
-		NbManche=nbManche;  NbJoueur=nbJoueur; ModeDeJeux=modeDeJeux;
+		NbManche=nbManche;  NbJoueur=nbJoueur; ModeDeJeux=modeDeJeux; 
+		NbJoueurEnJeu=NbJoueur;
 		// le jeu de cartes , 4 tortues, 4 joyaux, 3*4 murs de pierre, 2*4 mure de glace, 4*1 bug
 		//  11*4 carte bleue, 11*4 carte purple, 11*4 cartes jaune, 11*4 carte laser
 		/*
@@ -464,8 +471,8 @@ public class RobotTurtlesPartie {
 		{"E", "./images/ICE.png"}, // carte bug / erreur
 		
 		{"B", "./images/cards/bleueCard.png"}, // avancer
-		{"P", "./images/cards/purpleCard.png"}, // tourner à droite
-		{"Y", "./images/cards/yellowCard.png"}, // tourner à gauche
+		{"P", "./images/cards/purpleCard.png"}, // tourner ï¿½ droite
+		{"Y", "./images/cards/yellowCard.png"}, // tourner ï¿½ gauche
 		{"L", "./images/cards/LaserCard.png"}, // laser
 		*/
 	
@@ -480,6 +487,7 @@ public class RobotTurtlesPartie {
 	}
 	public void initialiserGrilles()
 	{
+		NbJoueurEnJeu=NbJoueur;
 		//grilles a vide
 		GrilleDeJeu=new String[8][8];
 		
@@ -491,9 +499,9 @@ public class RobotTurtlesPartie {
 			//SetPositionTortue
 			ListJoueurs.get(0).SetPositionTortue(0, 1,1);
 			ListJoueurs.get(1).SetPositionTortue(0, 5,1);
-			
-			GrilleDeJeu[0][1]="T1";// tortur 1
-			GrilleDeJeu[0][5]="T2";// tortur 2
+						
+			GrilleDeJeu[0][1]="T1";// tortue 1
+			GrilleDeJeu[0][5]="T2";// tortue 2
 			GrilleDeJeu[7][3]="R";// ruby
 			NbRubyEnJeux=1;
 		}
@@ -502,7 +510,7 @@ public class RobotTurtlesPartie {
 			ListJoueurs.get(1).SetPositionTortue(0, 3,1);
 			ListJoueurs.get(2).SetPositionTortue(0, 6,1);
 			
-			GrilleDeJeu[0][0]="T1";// tortur 1
+			GrilleDeJeu[0][0]="T1";// tortue 1
 			GrilleDeJeu[0][3]="T2";// tortur 2
 			GrilleDeJeu[0][6]="T3";// tortur 3
 			GrilleDeJeu[7][0]="R";// ruby
@@ -526,18 +534,18 @@ public class RobotTurtlesPartie {
 			GrilleDeJeu[7][6]="R";// ruby
 			NbRubyEnJeux=2;
 		}
-		NbGagneur=0;
+		NbGagnant=0;
 	}
 	public void InverserLeProgramme() {
 		ListJoueurs.get(JoueurCourant).InverserLeProgramme();
 	}
-	//les accesseurs get et set
+	//les accesseurs get et mutateurs set
 	public boolean GetModeTest() {
 		return ModeTest;
 	}
-	public String GetTortue()	
+	public String GetTortue(int NumJoueur)	
 	{
-		return ListJoueurs.get(JoueurCourant).GetTortue();
+		return ListJoueurs.get(NumJoueur).GetTortue();
 	}
 	public int GetLigneTortue(int joueurCourant)
 	{
@@ -589,7 +597,7 @@ public class RobotTurtlesPartie {
 	{
 		return NbManche;
 	}
-	//get des grilles du jeux pour interface graphique
+	//get des grilles du jeu pour interface graphique
 	public String[][] GetGrillePaquetDeCartes(){
 		return ListJoueurs.get(JoueurCourant).GetGrillePaquetDeCartes();
 	}
@@ -603,7 +611,7 @@ public class RobotTurtlesPartie {
 	public String[][] GetGrilleMain(){
 		return ListJoueurs.get(JoueurCourant).GetGrilleMain();
 	}
-	public String[][] GetGrilleProgramme(int mode){
+	public String[][] GetGrilleProgramme(int mode){ 
 		return ListJoueurs.get(JoueurCourant).GetGrilleProgramme(mode);
 	}
 	public String[][] GetGrilleDeJeu() {
@@ -618,14 +626,17 @@ public class RobotTurtlesPartie {
 	}
 	public  void SetPremierJoueur(int nb)
 	{
-		// nombre aléatoire entre 0 et nb de joueurs
+		// nombre alï¿½atoire entre 0 et nb de joueurs
 		Random random = new Random();
 		int numJoueur;
 		numJoueur = random.nextInt(nb);
-		
+	
 		JoueurCourant=numJoueur;
 	}
 	//methode propres au jeu
+	public void FinDuTour() {
+		PasserAuJoueurSuivant();
+	}
  	public void MelangerInstructions()
 	{
 		for(int i=0;i<ListJoueurs.size();i++) {
@@ -633,16 +644,14 @@ public class RobotTurtlesPartie {
 		}
 	}
 	public boolean AffecterUnBug(String codeCarte) {
-		/*
-		if(codeCarte.endsWith("1")) return ListJoueurs.get(0).InverserLeProgramme();
-		if(codeCarte.endsWith("2")) return ListJoueurs.get(1).InverserLeProgramme();
-		if(codeCarte.endsWith("3")) return ListJoueurs.get(2).InverserLeProgramme();
-		if(codeCarte.endsWith("4")) return ListJoueurs.get(3).InverserLeProgramme();
-		*/
-		if(codeCarte.endsWith("1")) return ListJoueurs.get(0).AffecterUnBug();
-		if(codeCarte.endsWith("2")) return ListJoueurs.get(1).AffecterUnBug();
-		if(codeCarte.endsWith("3")) return ListJoueurs.get(2).AffecterUnBug();
-		if(codeCarte.endsWith("4")) return ListJoueurs.get(3).AffecterUnBug();
+		boolean ret=ListJoueurs.get(JoueurCourant).SupprimerCarteBug();
+		if(ret) {
+			if(codeCarte.endsWith("1")) return ListJoueurs.get(0).AffecterUnBug();
+			if(codeCarte.endsWith("2")) return ListJoueurs.get(1).AffecterUnBug();
+			if(codeCarte.endsWith("3")) return ListJoueurs.get(2).AffecterUnBug();
+			if(codeCarte.endsWith("4")) return ListJoueurs.get(3).AffecterUnBug();
+		}
+			
 		return false;
 	}
 	public void Distribuer()
@@ -655,6 +664,7 @@ public class RobotTurtlesPartie {
 	public boolean TirerUneCarte()
 	{
 		return ListJoueurs.get(JoueurCourant).TirerUneCarte();
+		
 	}
 	public boolean DefausserUneCarte(String codeCarte)
 	{
@@ -666,6 +676,9 @@ public class RobotTurtlesPartie {
 	}
 	public boolean DeposerUnMur(int typeMur,int keyCarte)
 	{
+			if (ListJoueurs.get(JoueurCourant).GetActionDuTour() != 0) {
+				return false;
+			}
 			int lig = keyCarte / 10;
 			int col = keyCarte % 10;
 			
@@ -682,32 +695,24 @@ public class RobotTurtlesPartie {
 				if(caseGauche.startsWith("T") || caseGauche.startsWith("R"))return false;
 				if(caseDroite.startsWith("T") || caseDroite.startsWith("R"))return false;
 			}
-			if(typeMur==2) {//glace
-				if(caseHaut.startsWith("T") )return false;
-				if(caseBas.startsWith("T") )return false;
-				if(caseGauche.startsWith("T") )return false;
-				if(caseDroite.startsWith("T") )return false;
-			}
 			//si mur disponible ?
 			String carte= ListJoueurs.get(JoueurCourant).GetMur(typeMur);
 			if(carte == "") return false;
 			//sinon on place le mur
 			GrilleDeJeu[lig][col]=carte;
+			ListJoueurs.get(JoueurCourant).SetActionDuTour(3); // construire un mur
 			//passer au joueur suivant
 			PasserAuJoueurSuivant();
 			return true;
 	}
-	public boolean InserrerCarteAuProgramme(String codeCarte)
+	public boolean InsererCarteAuProgramme(String codeCarte)
 	{
-		return ListJoueurs.get(JoueurCourant).InserrerCarteAuProgramme( codeCarte);
+		return ListJoueurs.get(JoueurCourant).InsererCarteAuProgramme( codeCarte);
 	}
-	public boolean AnnulerCarteDuProgramme(String codeCarte)
+
+	public boolean AnnulerLeProgramme()
 	{
-		return ListJoueurs.get(JoueurCourant).AnnulerCarteDuProgramme( codeCarte);
-	}
-	public boolean AnnulerLeProgramme(int mode)
-	{
-		boolean ret=ListJoueurs.get(JoueurCourant).AnnulerLeProgramme(mode);
+		boolean ret=ListJoueurs.get(JoueurCourant).AnnulerLeProgramme();
 		if( ret == true) {
 			PasserAuJoueurSuivant();
 			return true;
@@ -725,17 +730,29 @@ public class RobotTurtlesPartie {
 	{
 		return ListJoueurs.get(numJoueur).GetOrientationTortue();
 	}
-	private void RetourTortuePositionInitiale(int numJoueur) {
-		int lig=ListJoueurs.get(numJoueur).GetLigneTortue();
-		int col=ListJoueurs.get(numJoueur).GetColonneTortue();
+	
+	private void RetourTortuePositionInitiale(String carteTortue) {
+		int numJoueur=-1;
+		if(carteTortue.endsWith("1")) numJoueur=0;
+		if(carteTortue.endsWith("2")) numJoueur=1;
+		if(carteTortue.endsWith("3")) numJoueur=2;
+		if(carteTortue.endsWith("4")) numJoueur=3;
 		
-		GrilleDeJeu[lig][col]="";
+		String cartetortue2=GrilleDeJeu[ListJoueurs.get(numJoueur).LigneInitialeTortue][ListJoueurs.get(numJoueur).ColonneInitialeTortue];//
+		if(numJoueur >= 0){
+			int lig=ListJoueurs.get(numJoueur).GetLigneTortue();
+			int col=ListJoueurs.get(numJoueur).GetColonneTortue();
+			
+			GrilleDeJeu[lig][col]="";
+			
+			ListJoueurs.get(numJoueur).RetourTortuePositionInitiale();
+			lig=ListJoueurs.get(numJoueur).GetLigneTortue();
+			col=ListJoueurs.get(numJoueur).GetColonneTortue();
+			GrilleDeJeu[lig][col]=ListJoueurs.get(numJoueur).GetTortue();
+		}
 		
-		ListJoueurs.get(numJoueur).RetourTortuePositionInitiale();
-		
-		lig=ListJoueurs.get(numJoueur).GetLigneTortue();
-		col=ListJoueurs.get(numJoueur).GetColonneTortue();
-		GrilleDeJeu[lig][col]=ListJoueurs.get(numJoueur).GetTortue();
+		// si on trouve une tortue dans la position initiale d'une autre tortue
+		if(cartetortue2.startsWith("T")) RetourTortuePositionInitiale(cartetortue2);
 	}
 	private void FaireDemiTourTortue(int numJoueur) {
 		int orientation=GetOrientationTortue(numJoueur);
@@ -744,7 +761,7 @@ public class RobotTurtlesPartie {
 	}
 	private void ExecuterProcedureAvancer() {
 		int orientationTortue=GetOrientationTortue(JoueurCourant);
-		String tortue=GetTortue();
+		String tortue=GetTortue(JoueurCourant);
 		
 		int ligTortue=GetLigneTortue(JoueurCourant);
 		int colTortue=GetColonneTortue(JoueurCourant);
@@ -761,30 +778,29 @@ public class RobotTurtlesPartie {
 		//sortie du plateau
 		if(newLigTortue < 0 || newLigTortue > 7 || newColTortue < 0 || newColTortue > 7) {
 			//position initiale
-			RetourTortuePositionInitiale(JoueurCourant);
+			RetourTortuePositionInitiale(  GetTortue(JoueurCourant));
 		} else 	if(newLigTortue>=0 && newLigTortue < 8 && newColTortue>=0 && newColTortue < 8) {
 			String nouvelleCase=GrilleDeJeu[newLigTortue][newColTortue];
 			
-			if(nouvelleCase.startsWith("R")) {// un joyau gangé ! woupi !!
-				ListJoueurs.get(JoueurCourant).NouveauJoyau(nouvelleCase,NbJoueur, ++NbGagneur);
-				NbRubyEnJeux--;
-				//nouvelle coordonnées de la tortue;
+			if(nouvelleCase.startsWith("R")) {// un joyau gangï¿½ ! youpi !!
+				ListJoueurs.get(JoueurCourant).NouveauJoyau(nouvelleCase,NbJoueur, ++NbGagnant);
+				//nouvelle coordonnï¿½es de la tortue;
+				ListJoueurs.get(JoueurCourant).EnJeu=false;
+				NbJoueurEnJeu--;
 				GrilleDeJeu[ligTortue][colTortue]="";
-				GrilleDeJeu[newLigTortue][newColTortue]=tortue;
-				SetPositionTortue(newLigTortue, newColTortue,2);
+				
+				//GrilleDeJeu[newLigTortue][newColTortue]=tortue;
+				//SetPositionTortue(newLigTortue, newColTortue,2);
 			} else	if( nouvelleCase.startsWith("W") || nouvelleCase.startsWith("I") ) {
 				//si carambolage avec un mur/demi-tour
 				FaireDemiTourTortue(JoueurCourant);
 			}else if( nouvelleCase.startsWith("T") ) {
-				//si carambolage avec une autre tortue/les deux tortue retournent à leur position initiale
+				//si carambolage avec une autre tortue/les deux tortues retournent ï¿½ leur position initiale
 				GrilleDeJeu[ligTortue][colTortue]="";
 				GrilleDeJeu[newLigTortue][newColTortue]="";
 
-				RetourTortuePositionInitiale(JoueurCourant);
-				if(nouvelleCase.endsWith("1")) RetourTortuePositionInitiale(0);
-				if(nouvelleCase.endsWith("2")) RetourTortuePositionInitiale(1);
-				if(nouvelleCase.endsWith("3")) RetourTortuePositionInitiale(2);
-				if(nouvelleCase.endsWith("4")) RetourTortuePositionInitiale(3);
+				RetourTortuePositionInitiale(GetTortue(JoueurCourant));
+				RetourTortuePositionInitiale(nouvelleCase);//si tortue dans la nouvelle position
 			}else {
 				//avance dans une case vide
 				GrilleDeJeu[ligTortue][colTortue]="";
@@ -799,70 +815,74 @@ public class RobotTurtlesPartie {
 		//tourne dans le sens d'une montre
 		//haut:0, gauche:1, bas:2, droite:3
 		int orientation=ListJoueurs.get(JoueurCourant).GetOrientationTortue();
-		orientation= (orientation-1);
-		if(orientation<0) orientation += 4;
+		orientation= (orientation+1)%4;		
 		ListJoueurs.get(JoueurCourant).SetOrientationTortue(orientation);
 	}
 	private void ExecuterProcedureDroite() {
 		//tourne dans le sens contraire d'une montre
 		//haut:0, gauche:1, bas:2, droite:3
 		int orientation=ListJoueurs.get(JoueurCourant).GetOrientationTortue();
-		orientation= (orientation+1)%4;
+		orientation= (orientation-1);
+		if(orientation<0) orientation += 4;
 		ListJoueurs.get(JoueurCourant).SetOrientationTortue(orientation);
 	}
 	private void PasserAuJoueurSuivant()
 	{
 		//passer au joueur suivant si non test
 		if(!ModeTest) {
-			JoueurCourant=(JoueurCourant+1)%NbJoueur;
+			for(int i=0; i< 4; i++) {
+				JoueurCourant=(JoueurCourant+1) % NbJoueur;
+				if (ListJoueurs.get(JoueurCourant).EnJeu==true) {
+					ListJoueurs.get(JoueurCourant).SetActionDuTour(0); // le  joueur suivant peurt jouer
+					return;
+				}
+			}
 		}
-		
+		else ListJoueurs.get(JoueurCourant).SetActionDuTour(0);
 	}
 	private boolean ExecuterProcedureLaser(int lig, int col) {
 		if(GrilleDeJeu[lig][col].startsWith("I")) {
-			//mur de glace / le mur est dessout
+			//mur de glace / le mur est dissout
 			GrilleDeJeu[lig][col]="";
 			return true;
 		}
 		if(GrilleDeJeu[lig][col].startsWith("W")) {
 			//mur de pierre / rien ne se passe
-			//GrilleDeJeu[l][colTortue]="";
 			return true;
 		}
 		if(GrilleDeJeu[lig][col].startsWith("R") ) {
-			//ruby / le laser est reflaichi, la tortue rebrousse chemin
+			//ruby / le laser est reflï¿½chi, la tortue rebrousse chemin
 			//GrilleDeJeu[ligTortue][colTortue]="";
 			if(NbJoueur == 2 ) {
 				//demie-tour
 				FaireDemiTourTortue(JoueurCourant);
 			}else {
 				//position initiale
-				RetourTortuePositionInitiale(JoueurCourant);
+				RetourTortuePositionInitiale(GetTortue(JoueurCourant));
 			}
 			
 			return true;
 		}
 		if(GrilleDeJeu[lig][col].startsWith("T")) {
-			// tortue/ le laser a touché une tortue
+			// tortue/ le laser a touchï¿½ une tortue
 			String nouvelleCase=GrilleDeJeu[lig][col];
-			int numJoueurTouche=0; // de la tortue touchée
-			if(nouvelleCase.endsWith("1")) numJoueurTouche=0;
-			if(nouvelleCase.endsWith("2")) numJoueurTouche=1;
-			if(nouvelleCase.endsWith("3")) numJoueurTouche=2;
-			if(nouvelleCase.endsWith("4")) numJoueurTouche=3;
+			int numJoueurTouche=0; // de la tortue touchï¿½e
 			if(NbJoueur == 2 ) {
 				//demie-tour
 				FaireDemiTourTortue(numJoueurTouche);
 			}else {
 				//position initiale
-				RetourTortuePositionInitiale(numJoueurTouche);
+				RetourTortuePositionInitiale(nouvelleCase);
 			}
 			return true;
 		}
 		return false;
 	}
-	public int ExecuterProgramme()//execution d'un programme
+	public String ExecuterProgramme()//execution d'un programme
 	{
+		if (ListJoueurs.get(JoueurCourant).GetActionDuTour() != 0) {
+			return "Impossible";
+		}
 		ArrayList<String> programme=GetProgramme();
 		//si carte bug
 		if(programme.size()>0 && programme.get(0).startsWith("E")) {
@@ -870,14 +890,14 @@ public class RobotTurtlesPartie {
 			programme=GetProgramme();
 		}
 		
-		int nbInstructionExcecute=0;
+		int nbInstructionExecute=0;
 		int orientationTortue;
 		int ligTortue;
 		int colTortue;
 		
 		
 				
-		//excécution du programme
+		//excï¿½cution du programme
 		for(int i=0;i<programme.size();i++) {
 			String instruction=programme.get(i);
 			//System.out.println("instruction:"+instruction);
@@ -889,66 +909,69 @@ public class RobotTurtlesPartie {
 			
 			//si avancer
 			if(instruction.startsWith("B")) {
-				nbInstructionExcecute++;
+				nbInstructionExecute++;
 				ExecuterProcedureAvancer();
 				ligTortue=GetLigneTortue(JoueurCourant);
 				colTortue=GetColonneTortue(JoueurCourant);
 			}
-			//a droite / +1
+			//a droite / -1
 			if(instruction.startsWith("P")) {
-				nbInstructionExcecute++;
+				nbInstructionExecute++;
 				ExecuterProcedureDroite();
 				orientationTortue=GetOrientationTortue(JoueurCourant);
 			}
-			//a gauche / -1
+			//a gauche / +1
 			if(instruction.startsWith("Y")) {
-				nbInstructionExcecute++;
+				nbInstructionExecute++;
 				ExecuterProcedureGauche();
 				orientationTortue=GetOrientationTortue(JoueurCourant);
 			}
 			//laser
 			if(instruction.startsWith("L") ) {
-				nbInstructionExcecute++;
+				nbInstructionExecute++;
 				ligTortue=GetLigneTortue(JoueurCourant);
 				colTortue=GetColonneTortue(JoueurCourant);
 				boolean obstacleTrouve=false;
 				//parcours selon orientation de la tortue
 				obstacleTrouve=false;
 				if(orientationTortue==BAS) {
-					for(int lig=ligTortue+1,  col=colTortue;lig < 8 && !obstacleTrouve;lig++) {
+					for(int lig=ligTortue+1; lig < 8 && !obstacleTrouve;lig++) {
+						int col=colTortue; 
 						obstacleTrouve=ExecuterProcedureLaser(lig,col);
 					}
 				}
 				else if(orientationTortue==HAUT) {
-					for(int lig =ligTortue-1,  col=colTortue;lig > 0 && !obstacleTrouve;lig--) {
+					for(int lig =ligTortue-1; lig > 0 && !obstacleTrouve;lig--) {
+						int col=colTortue;
 						obstacleTrouve=ExecuterProcedureLaser(lig,col);
 					}
 				}
 				else if(orientationTortue==GAUCHE) {
-					for(int lig=ligTortue, col =colTortue-1;col > 0 && !obstacleTrouve;col--) {
+					for(int col =colTortue-1;col > 0 && !obstacleTrouve;col--) {
+						int lig=ligTortue;
 						obstacleTrouve=ExecuterProcedureLaser(lig,col);
 					}
 				}
 				else if(orientationTortue==DROITE) {
-					for(int lig=ligTortue, col =colTortue+1;col < 8 && !obstacleTrouve;col++) {
+					for(int col =colTortue+1;col < 8 && !obstacleTrouve;col++) {
+						int  lig=ligTortue;
 						obstacleTrouve=ExecuterProcedureLaser(lig,col);
 					}
 				}
 			}
 		}
 		
-		if(nbInstructionExcecute < 1) return -1;//erreur!
+		if(nbInstructionExecute < 1) return "Erreur";//erreur!
 		
 		// voir NbCarteJouees pour melanger de nouveau, si >=37 on atteint la defausse!
-		ListJoueurs.get(JoueurCourant).NbCarteJouees += nbInstructionExcecute;
-		ListJoueurs.get(JoueurCourant).NbTour++;
+		ListJoueurs.get(JoueurCourant).NbCarteJouees += nbInstructionExecute;
 		if(ListJoueurs.get(JoueurCourant).NbCarteJouees >= 37) {
 			ListJoueurs.get(JoueurCourant).MelangerInstructions();
 			ListJoueurs.get(JoueurCourant).NbCarteJouees=0;
 		}
 		
 		//fin de la manche
-		if(NbRubyEnJeux == 0 && MancheCourante < NbManche) {
+		if(NbJoueurEnJeu == 1 && MancheCourante < NbManche) {
 			//fin de la manche
 			MancheCourante++;
 			// initialiser tous les joueurs
@@ -958,19 +981,19 @@ public class RobotTurtlesPartie {
 			}
 			initialiserGrilles();
 			PasserAuJoueurSuivant();
-			return 66; 
+			return "FinManche"; 
 		}
 		
 		//fin de la partie
-		if(NbRubyEnJeux == 0 && MancheCourante == NbManche) {
+		if(NbJoueurEnJeu == 1 && MancheCourante == NbManche) {
 			//fin de la partie
-			return 99; 
+			PasserAuJoueurSuivant();
+			return "FinPartie"; 
 		}
 		
 		//vider le programme
-		AnnulerLeProgramme(1);//y compris la carte bug
-		PasserAuJoueurSuivant();
+		AnnulerLeProgramme();//y compris la carte bug
 		
-		return 0;//continuer la partie
+		return "ViderProg";//continuer la partie
 	}
 }

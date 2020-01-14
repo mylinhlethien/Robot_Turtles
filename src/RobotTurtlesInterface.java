@@ -33,14 +33,19 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+
 //classe tuile permet d'afficher les cartes 
 class Tuile extends JButton implements MouseListener {
-	private static final long serialVersionUID = 1L;
 	String CodeCarte;
 	int ligne, colonne;
 	int whith, height;
 	int Key;// ligne*10+colonne
 	int Emplacement; // 1 panel jeu, 2,3,4,5 panels joueur
+	private static final int PANEL_JEU = 1;
+	private static final int PANEL_CARTE = 2;
+	private static final int PANEL_DEFENSE = 3;
+	private static final int PANEL_MAIN = 4;
+	private static final int PANEL_PROGRAMME = 5;
 	public Image imgTuile;
 	public String imgPathTuile;
 
@@ -90,6 +95,7 @@ class Tuile extends JButton implements MouseListener {
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
 		Tuile tuile = (Tuile) arg0.getSource();
+		
 		int event= arg0.getButton();
 		String msg = "";
 		boolean retOk;
@@ -99,86 +105,84 @@ class Tuile extends JButton implements MouseListener {
 			if ( event == MouseEvent.BUTTON1 && tuile.CodeCarte.equals("Paquet")) {
 				//clic gauche sur carte paquet
 				retOk = tuile.Partie.TirerUneCarte();
-				if (!retOk) msg = "Main est complËte!";
+				if (!retOk) msg = "Main est compl√®te ou nombre max de cartes tir√©es atteint!";
 				tuile.Frame.AfficherGrillesBas();
 			}
 			break; 
-		case "Defense":
-			// aucun traitement pour carte defense
+		case "D√©fense":
+			// aucun traitement pour carte d√©fense
 			break; 
 		case "Main":
 			if ( event == MouseEvent.BUTTON3 && tuile.CodeCarte.equals("Main"))  {
 				//clic droit sur carte main
 				retOk = tuile.Partie.DefausserLaMain();
+				if (!retOk) msg="Nb max de cartes d√©fauss√©es atteint";
 				tuile.Frame.AfficherGrillesBas();
 			}
 			break; 
 		default:
 				//grille du jeu, celle du haut
-				if( tuile.Emplacement == 1 && event == MouseEvent.BUTTON1  &&  tuile.CodeCarte.startsWith("T")) {
+				if( tuile.Emplacement == PANEL_JEU && event == MouseEvent.BUTTON1  &&  tuile.CodeCarte.startsWith("T")) {
 					//carte tortue
-					if( tuile.Partie.GetNbJoueur() >1) {
+					//if( tuile.Partie.GetNbJoueur() >1) {
 						//affecter un bug
-						msg +="bug affectÈ";
+						msg +="bug affect√©";
 						retOk=Partie.AffecterUnBug(tuile.CodeCarte);
 						if (!retOk) msg = "Pas de bug disponible!";
 						tuile.Frame.AfficherGrilleHaut(1,null);
 						tuile.Frame.AfficherGrillesBas();
-					}
+					//}
 				}
-				if( tuile.Emplacement == 1 &&  tuile.CodeCarte =="") {
+				if( tuile.Emplacement == PANEL_JEU &&  tuile.CodeCarte =="") {
 					if(event == MouseEvent.BUTTON1 &&  tuile.CodeCarte =="") {
-						//clic gauche sur case vide : dÈposer un mur de pierre
+						//clic gauche sur case vide : d√©poser un mur de pierre
 						retOk=Partie.DeposerUnMur(1,tuile.Key);
-						if (!retOk) msg = "Encerclement ou pas de murs disponibles!";
+						if (!retOk) msg = "Encerclement ou pas de murs disponibles ou op√©ration interdite!";
 						tuile.Frame.AfficherGrilleHaut(1,null);
 						tuile.Frame.AfficherGrillesBas();
 					}
 					if(event == MouseEvent.BUTTON3 &&  tuile.CodeCarte =="") {
-						//clic droit sur case vide : dÈposer un mur de glace
+						//clic droit sur case vide : d√©poser un mur de glace
 						retOk=Partie.DeposerUnMur(2,tuile.Key);
-						if (!retOk) msg = "Pas de murs disponibles!";
+						if (!retOk) msg = "Encerclement ou pas de murs disponibles ou op√©ration interdite!";
 						tuile.Frame.AfficherGrilleHaut(1,null);
 						tuile.Frame.AfficherGrillesBas();
 					}
 
 				}
 				//grille defense, en bas
-				if( tuile.Emplacement == 3 &&  tuile.CodeCarte !="") {
+				if( tuile.Emplacement == PANEL_DEFENSE &&  tuile.CodeCarte !="") {
 					//aucun traitement
 				}
 				//grille main, en bas
-				if(tuile.Emplacement == 4 && event == MouseEvent.BUTTON1 &&  tuile.CodeCarte !="") {
+				if(tuile.Emplacement == PANEL_MAIN && event == MouseEvent.BUTTON1 &&  tuile.CodeCarte !="") {
 					//clic gauche
-					retOk = tuile.Partie.InserrerCarteAuProgramme(tuile.CodeCarte);
+					retOk = tuile.Partie.InsererCarteAuProgramme(tuile.CodeCarte);
 					tuile.Frame.AfficherGrillesBas();
 				}
-				if( tuile.Emplacement == 4 && event == MouseEvent.BUTTON3 &&  tuile.CodeCarte !="") {
+				if( tuile.Emplacement == PANEL_MAIN && event == MouseEvent.BUTTON3 &&  tuile.CodeCarte !="") {
 					//clic droit
 					retOk = tuile.Partie.DefausserUneCarte(tuile.CodeCarte);
+					if (!retOk) msg="Nb max de cartes d√©fauss√©es atteint";
 					tuile.Frame.AfficherGrillesBas();
 				}
 				//grille programme, en bas
-				if(tuile.Emplacement == 5 && event == MouseEvent.BUTTON1  &&  tuile.CodeCarte.startsWith("T")) {
+				if(tuile.Emplacement == PANEL_PROGRAMME && event == MouseEvent.BUTTON1  &&  tuile.CodeCarte.startsWith("T")) {
 					//clic gauche sur carte tortue
-					int newKey = tuile.Partie.ExecuterProgramme();
-					if (newKey == -1) msg = "Erreur d'excÈcution ou programme vide!";
-					if (newKey == 66) msg = "Fin de la manche!";
-					if (newKey == 99) msg = "Fin de la partie!";
+					String newKey = tuile.Partie.ExecuterProgramme();
+					if (newKey == "Erreur") msg = "Erreur d'ex√©cution ou programme vide!";
+					if (newKey == "FinManche") msg = "Fin de la manche!";
+					if (newKey == "FinPartie") msg = "Fin de la partie!";
+					if (newKey == "Impossible") msg = "Impossible d'ex√©cuter, essayez au prochain tour";
 					//else tuile.Key=newKey;
 					tuile.Frame.AfficherGrilleHaut(1,null);
 					tuile.Frame.AfficherGrillesBas();
 				} 
-				if(tuile.Emplacement == 5 && event == MouseEvent.BUTTON3  &&  tuile.CodeCarte.startsWith("T")) {
+				if(tuile.Emplacement == PANEL_PROGRAMME && event == MouseEvent.BUTTON3  &&  tuile.CodeCarte.startsWith("T")) {
 					//clic droit sur carte tortue
-					retOk = tuile.Partie.AnnulerLeProgramme(0);
+					tuile.Partie.FinDuTour();
 					tuile.Frame.AfficherGrillesBas();
 				} 
-				if(tuile.Emplacement == 5 && event == MouseEvent.BUTTON3  &&  !tuile.CodeCarte.startsWith("T") &&  tuile.CodeCarte !="") {
-					//clic droit
-					retOk = tuile.Partie.AnnulerCarteDuProgramme(tuile.CodeCarte);
-					tuile.Frame.AfficherGrillesBas();
-				}
 		}
 		
 		//message au joueur si alert
@@ -203,39 +207,35 @@ class Tuile extends JButton implements MouseListener {
 			break; 
 		default:
 			//grille du haut
-			if( tuile.Emplacement == 1 &&  tuile.CodeCarte.startsWith("T")) {
+			if( tuile.Emplacement == PANEL_JEU &&  tuile.CodeCarte.startsWith("T")) {
 				//carte tortue
-				if( tuile.Partie.GetNbJoueur() >1) {
+				//if( tuile.Partie.GetNbJoueur() >1) {
 					String orient=tuile.Partie.GetOrientTortue();
 					msg += ", orient:"+orient;
 					msg += ", clic  pour affecter un bug";
-				}
+				//}
 			}
-			if( tuile.Emplacement == 1 &&  tuile.CodeCarte =="") {
+			if( tuile.Emplacement == PANEL_JEU &&  tuile.CodeCarte =="") {
 					//case vide
-					msg += ", clic droit/gauche pour dÈposer un mur";
+					msg += ", clic droit/gauche pour d√©poser un mur";
 			}
 			//defense
-			if( tuile.Emplacement == 3 &&  tuile.CodeCarte !="") {
+			if( tuile.Emplacement == PANEL_DEFENSE &&  tuile.CodeCarte !="") {
 				if(tuile.CodeCarte.startsWith("W")) {
-					msg += ", clic gauche dans la grille pour dÈposer ce mur";
+					msg += ", clic gauche dans la grille pour d√©poser ce mur";
 				}
 				if(tuile.CodeCarte.startsWith("I")) {
-					msg += ", clic droit dans la grille pour dÈposer ce mur";
+					msg += ", clic droit dans la grille pour d√©poser ce mur";
 				}
 			}
 			//main
-			if( tuile.Emplacement == 4 &&  tuile.CodeCarte !="") {
-				msg += ", clic pour ajouter la carte au programme & Clic droit pour defausser la carte";
+			if( tuile.Emplacement == PANEL_MAIN &&  tuile.CodeCarte !="") {
+				msg += ", clic pour ajouter la carte au programme & Clic droit pour d√©fausser la carte";
 			}
 			//programme
-			if( tuile.Emplacement == 5 &&  tuile.CodeCarte.startsWith("T") ) {
+			if( tuile.Emplacement == PANEL_PROGRAMME &&  tuile.CodeCarte.startsWith("T") ) {
 				msg += ", Nom:"+Partie.GetNomJoueurCourant();
-				msg += ", Clic pour exÈcuter le programme, clic droit pour defausser tout le programme";
-				msg += " / Nb="+ tuile.Partie.GetNbCarteProgramme();
-			}
-			if( tuile.Emplacement == 5 &&  !tuile.CodeCarte.startsWith("T") && tuile.CodeCarte !="") {
-				msg += ", Clic droit pour defausser la carte de programme";
+				msg += ", Clic pour ex√©cuter le programme, clic droit pour passer le tour";
 				msg += " / Nb="+ tuile.Partie.GetNbCarteProgramme();
 			}
 			break;
@@ -253,7 +253,7 @@ class Tuile extends JButton implements MouseListener {
 	}
 }
 
-//classe grille permet de crÈer une grille de n X m cases 
+//classe grille permet de cr√©er une grille de n X m cases 
 class PanelGrille extends JPanel {
 	private static final long serialVersionUID = 1L;
 	public Image imgBackground;
@@ -270,7 +270,7 @@ class PanelGrille extends JPanel {
 		setSize(size);
 		GridLayout grid = new GridLayout(nbLig, nbCol);
 		setLayout(grid);
-		// ceation de la grille avec des tuiles vides
+		// creation de la grille avec des tuiles vides
 		for (int i = 1; i <= nbLig; i++) {
 			for (int j = 1; j <= nbCol; j++) {
 				Tuile tuile = new Tuile(partie, frame, i, j, emplacement, "");
@@ -281,7 +281,7 @@ class PanelGrille extends JPanel {
 	}
 }
 
-//fenÍtre principale de l'application
+//fen√®tre principale de l'application
 public class RobotTurtlesInterface implements ActionListener {
 	RobotTurtlesPartie Partie;
 	// variables pour panel Parametres
@@ -310,7 +310,7 @@ public class RobotTurtlesInterface implements ActionListener {
 	JTextField TxtNomJoueur1, TxtNomJoueur2, TxtNomJoueur3, TxtNomJoueur4;
 	JTextField TxtScore1, TxtScore2, TxtScore3, TxtScore4;
 	JCheckBox CheckboxTest;
-	JTextField TxtLibellManche, TxtNumManche;// libelle et NumÈro de la manche
+	JTextField TxtLibellManche, TxtNumManche;// libelle et Num√©ro de la manche
 	//variables pour panel Utilisateur
 	PanelGrille PanelDefense,PanelJoyaux,PanelMain,PanelProgramme;
 	//variables pour panel Grille
@@ -322,7 +322,7 @@ public class RobotTurtlesInterface implements ActionListener {
 		int w, h;
 		w = 910;
 		h = 810;
-		Border panelBorder = new LineBorder(Color.DARK_GRAY, 2);//bordure des panaels
+		Border panelBorder = new LineBorder(Color.DARK_GRAY, 2);//bordure des panels
 
 		// creation de la frame principale
 		JFrame frame = new JFrame(" Robot Turtles");
@@ -332,7 +332,7 @@ public class RobotTurtlesInterface implements ActionListener {
 		frame.setBackground(Color.WHITE);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		CheckboxTest = new JCheckBox("Test");
+		 CheckboxTest = new JCheckBox("Test");
 		 CheckboxTest.setSelected(false);
 		// add to a container
 		frame.add(CheckboxTest);
@@ -353,7 +353,7 @@ public class RobotTurtlesInterface implements ActionListener {
 		panelDroite.setBackground(Color.WHITE);
 		frame.add(panelDroite, BorderLayout.EAST);
 
-		// dans panel Gauche on met horizentalement parametre et Etat //JPanel
+		// dans panel Gauche on met horizontalement parametre et Etat //JPanel
 		int hdh = 500;
 		panelParam = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		panelParam.setPreferredSize(new Dimension(wg, hdh));
@@ -464,7 +464,7 @@ public class RobotTurtlesInterface implements ActionListener {
 		btnTestAffCarte.setBackground(Color.BLUE);
 		btnTestAffCarte.setForeground(Color.WHITE);
 
-		btnTestAffProg = new JButton("Aff Prog.");// programe pour test
+		btnTestAffProg = new JButton("Aff Prog.");// programme pour test
 		btnTestAffProg.addActionListener(this);
 		btnTestAffProg.setBackground(Color.BLUE);
 		btnTestAffProg.setForeground(Color.WHITE);
@@ -522,7 +522,7 @@ public class RobotTurtlesInterface implements ActionListener {
 
 		// (5) Utilisateur Courant
 		lblUtilisateurCourant = new JLabel("");
-		appUtilisateurCourant = new String[5];// liste des manche
+		appUtilisateurCourant = new String[5];// liste des manches
 		String nomJoueur1="AAAAA";
 		String nomJoueur2="BBBBB";
 		String nomJoueur3="CCCCC";
@@ -553,7 +553,7 @@ public class RobotTurtlesInterface implements ActionListener {
 		btnInitialiser.setBackground(Color.white);
 		btnInitialiser.setForeground(Color.BLUE);
 
-		btnMelanger = new JButton("Melanger");// pour test
+		btnMelanger = new JButton("M√©langer");// pour test
 		btnMelanger.addActionListener(this);
 		btnMelanger.setBackground(Color.white);
 		btnMelanger.setForeground(Color.BLUE);
@@ -702,14 +702,14 @@ public class RobotTurtlesInterface implements ActionListener {
 		Image imgTuile;
 		Tuile oTuile = null;
 
-		//affichage du joueur courant qui a peut-Ítre changÈ MMMM
+		//affichage du joueur courant qui a peut-√™tre chang√© MMMM
 		comboUtilisateurCourant.setSelectedIndex(Partie.GetJoueurCourant());
 
 		// emplacement 1 = Grille de jeu et 2=Grilles joueur
 		Component[] grilleGraphique = panel.getComponents();;
 		String[][] grilleCartes = grille;
 		
-		// affichagedes donnÈes
+		// affichage des donn√©es
 		for (int l = 0; l < grilleGraphique.length; l++) {
 			Component oComponent = grilleGraphique[l];
 			if (oComponent instanceof Tuile) {
@@ -787,7 +787,7 @@ public class RobotTurtlesInterface implements ActionListener {
 			for (int col = 0; col < 8; col++)
 				grilleDeJeu[lig][col] = "";
 		//
-		if(mode == 2)
+		if(mode == 2) 
 		{
 			// affichage carte du joueur
 			String[][] grillePaquetDeCartes=Partie.GetGrillePaquetDeCartes();
@@ -802,7 +802,7 @@ public class RobotTurtlesInterface implements ActionListener {
 		
 		if(mode == 3)
 		{
-			// affichage programme
+			// affichage programme :
 			String[][] grilleProgramme=Partie.GetGrilleProgramme(1);
 			for (int col = 1; col < grilleProgramme[0].length; col++)
 			{
@@ -878,14 +878,19 @@ public class RobotTurtlesInterface implements ActionListener {
 			nbJoueur = 4;
 
 		int modeDeJeux = 1;// DeBase
-		if (comboMode.getSelectedIndex() == 1)	modeDeJeux = 2;//AvancÈ
+		if (comboMode.getSelectedIndex() == 1)	modeDeJeux = 2;//Avanc√©
 
 		// initalisation de la partie
 		Partie.Initialiser(nbManche, nbJoueur, modeDeJeux);
 		//juste pour test
+		//CheckboxTest.setSelected(false);
 		Partie.SetModeTest(CheckboxTest.isSelected());
+		btnTestRetJeu.setEnabled(false);
+		btnTestAffCarte.setEnabled(false);
+		btnTestAffProg.setEnabled(false);
 		
-		//choix alÈatoire du premier joueur
+		
+		//choix al√©atoire du premier joueur
 		Partie.SetPremierJoueur(nbJoueur);
 		int numJoueur = Partie.GetJoueurCourant();
 		comboUtilisateurCourant.setSelectedIndex(numJoueur);
@@ -919,11 +924,11 @@ public class RobotTurtlesInterface implements ActionListener {
 
 		// System.out.println("SetLangue");//msg console
 
-		if (indexLangue == 0) // franÁais
+		if (indexLangue == 0) // fran√ßais
 		{
 			// langue
 			lblLangue.setText("Langue :");
-			appLangue[0] = "FranÁais";
+			appLangue[0] = "Fran√ßais";
 			appLangue[1] = "Anglais";
 			DefaultComboBoxModel<String> ModelLangue = new DefaultComboBoxModel<String>(appLangue); 
 			comboLangue.setModel(ModelLangue);
@@ -932,7 +937,7 @@ public class RobotTurtlesInterface implements ActionListener {
 			// mode
 			lblMode.setText("Mode :");
 			appMode[0] = "Mode de base";
-			appMode[1] = "Mode avancÈ";
+			appMode[1] = "Mode avanc√©";
 			DefaultComboBoxModel<String> ModelMode = new DefaultComboBoxModel<String>(appMode); 
 			comboMode.setModel(ModelMode);
 			comboMode.setSelectedIndex(indexMode);
@@ -965,18 +970,18 @@ public class RobotTurtlesInterface implements ActionListener {
 
 			// boutons
 			btnInitialiser.setText("Initialiser");
-			btnMelanger.setText("Melanger");
+			btnMelanger.setText("M√©langer");
 			btnDistribuer.setText("Distribuer");
 			btnJouer.setText("Jouer");
 			btnAbandonner.setText("Abandonner");
 			btnFin.setText("Sortie");
 
-			toolTipInitialiser = "Initialisation et affichage dans la grille des cartes pour les utilisateurs dÈclarÈs et en fonction du mode";
-			toolTipMelanger = "Melanger et affichage dans la grille des cartes pour les utilisateurs dÈclarÈs et en fonction du mode";
+			toolTipInitialiser = "Initialisation et affichage dans la grille des cartes pour les utilisateurs d√©clar√©s et en fonction du mode";
+			toolTipMelanger = "Melanger et affichage dans la grille des cartes pour les utilisateurs d√©clar√©s et en fonction du mode";
 			toolTipDistribuer = "Initialisation Grille pour jouer en fonction du nb des joueur + distribution des cartes pour les utilisateurs";
 			toolTipAbandonner = "Abandon de la manche en cours";
 			toolTipFin = "Fin de la partie est sortie du programme";
-			toolTipJouer = "DÈbut de la manche";
+			toolTipJouer = "D√©but de la manche";
 
 			btnInitialiser.setToolTipText(toolTipInitialiser);
 			btnMelanger.setToolTipText(toolTipMelanger);
@@ -1015,7 +1020,7 @@ public class RobotTurtlesInterface implements ActionListener {
 			comboNbJoueur.setSelectedIndex(indexNbJoueur);
 
 			// Nb Manche
-			lblNbManche.setText("Nb de manches :");
+			lblNbManche.setText("Nb of rounds :");
 			appNbManche[0] = "One round";
 			appNbManche[1] = "Three rounds";
 
@@ -1149,6 +1154,10 @@ public class RobotTurtlesInterface implements ActionListener {
 		if (sourceAction == CheckboxTest) {
 			//showMessageDialog(null, "CheckboxTest");
 			Partie.SetModeTest(CheckboxTest.isSelected());
+			btnTestRetJeu.setEnabled(CheckboxTest.isSelected());
+			btnTestAffCarte.setEnabled(CheckboxTest.isSelected());
+			btnTestAffProg.setEnabled(CheckboxTest.isSelected());
+			
 		}
 		if (sourceAction == btnTestRetJeu) {
 			this.AfficherGrilleHaut(1, Partie.GetGrilleDeJeu());
